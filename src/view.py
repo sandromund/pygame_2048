@@ -1,16 +1,20 @@
+import logging
+
 import pygame
-from messages import Connection
+from src.messages import Connection
 
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, connection):
         self.board = None
-        self.connection: Connection = None
-
+        self.connection: Connection = connection
         self.board_background_color = (255, 255, 255)
         self.tile_size = 250
         self.fps = 60
+        self.state = None
+        self.score = None
+        self.board = None
 
         pygame.init()
 
@@ -49,35 +53,36 @@ class Game:
         }.get(tile_value, (0, 0, 0))
 
     def run(self):
+
+        logging.info("Connecting to server...")
+        answer = self.connection.connect()
+        logging.info("Connection successful.")
+
+        self.state, self.score, self.board = self.connection.decode_server_message(answer)
+
         pygame.display.set_caption('2048 Game')
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-
             keys = pygame.key.get_pressed()
             if keys[pygame.K_UP]:
-                direction = 'up'
+                answer = self.connection.sent_move(direction='up')
             elif keys[pygame.K_DOWN]:
-                direction = 'down'
+                answer = self.connection.sent_move(direction='down')
             elif keys[pygame.K_LEFT]:
-                direction = 'left'
+                answer = self.connection.sent_move(direction='left')
             elif keys[pygame.K_RIGHT]:
-                direction = 'right'
-            else:
-                direction = 'quit'
+                answer = self.connection.sent_move(direction='right')
+            elif keys[pygame.K_ESCAPE]:
+                self.connection.sent_move(direction='quit')
+                break
+
+            self.state, self.score, self.board = self.connection.decode_server_message(answer)
 
             self.screen.fill(self.board_background_color)
             self.draw_board()
             pygame.display.flip()
             self.clock.tick(self.fps)
 
-
-if __name__ == '__main__':
-    game = Game()
-    game.board = [1, 1, 4, 1,
-                  1, 2, 1, 1,
-                  16, 1, 2, 1,
-                  1, 8, 1, 1]
-    game.run()
