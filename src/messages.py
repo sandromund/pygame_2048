@@ -65,6 +65,6 @@ class Connection:
         board_bytes = byte_str[6:]
         state = int.from_bytes(byte_str[1:2], byteorder='little', signed=False)
         score = int.from_bytes(byte_str[2:6], byteorder='little', signed=False)
-        board = [2 ** int(byte_str[i]) for i in range(len(board_bytes))]
+        board = [2 ** int(board_bytes[i]) for i in range(len(board_bytes))]
 
         return state, score, board

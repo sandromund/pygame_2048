@@ -1,7 +1,9 @@
 import logging
+import time
 
 import pygame
 from src.messages import Connection
+import numpy as np
 
 
 class Game:
@@ -11,7 +13,7 @@ class Game:
         self.connection: Connection = connection
         self.board_background_color = (255, 255, 255)
         self.tile_size = 250
-        self.fps = 60
+        self.fps = 20
         self.state = None
         self.score = None
         self.board = None
@@ -22,9 +24,10 @@ class Game:
         self.clock = pygame.time.Clock()
 
     def draw_board(self):
+        self.board = np.array(self.board).reshape((4, 4))
         for i in range(4):
             for j in range(4):
-                tile_value = self.board[(i*4 + j)]
+                tile_value = self.board[i][j]
                 pygame.draw.rect(surface=self.screen,
                                  color=self.get_tile_color(tile_value),
                                  rect=(j * self.tile_size, i * self.tile_size, self.tile_size, self.tile_size))
@@ -67,19 +70,32 @@ class Game:
                     pygame.quit()
                     quit()
             keys = pygame.key.get_pressed()
+            delay = 0.1
             if keys[pygame.K_UP]:
                 answer = self.connection.sent_move(direction='up')
+                time.sleep(delay)
             elif keys[pygame.K_DOWN]:
                 answer = self.connection.sent_move(direction='down')
+                time.sleep(delay)
             elif keys[pygame.K_LEFT]:
                 answer = self.connection.sent_move(direction='left')
+                time.sleep(delay)
             elif keys[pygame.K_RIGHT]:
                 answer = self.connection.sent_move(direction='right')
+                time.sleep(delay)
             elif keys[pygame.K_ESCAPE]:
                 self.connection.sent_move(direction='quit')
                 break
 
             self.state, self.score, self.board = self.connection.decode_server_message(answer)
+
+            if self.state == 1:
+                print("Won! -> Score:", self.score)
+                exit()
+
+            if self.state > 1:
+                print("Game Over! -> Score:", self.score)
+                exit()
 
             self.screen.fill(self.board_background_color)
             self.draw_board()
