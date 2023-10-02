@@ -13,11 +13,21 @@ class Connection:
 
     @staticmethod
     def get_direction_mapping():
+        """
+        Client -> Server (2 B)
+            1 Byte Type: 0x1
+            1 Byte Direction:
+                Up: 0x0
+                Right: 0x1
+                Down: 0x2
+                Left 0x3
+                Quit: 0x4
+        """
         return {
             "up": b"\x01\x00",
             "right": b"\x01\x01",
-            "left": b"\x01\x02",
-            "down": b"\x01\x03",
+            "left": b"\x01\x03",
+            "down": b"\x01\x02",
             "quit": b"\x01\x04"
         }
 
@@ -32,10 +42,42 @@ class Connection:
     def sent_move(self, direction):
         self.socket.send(self.mapping[direction])
 
+    @staticmethod
+    def decode_server_message(self, byte_str):
+        """
+        Server -> Client (22 B)
+            1 Byte Type: 0x0
+            1 Byte State:
+                Playing: 0x0
+                Won: 0x1
+                Lost: 0x2
+            4 Byte Score: unsigned int
+            16 Byte Board: exponent of powers of 2
+
+        return :
+            state   0 := playing
+                    1 := won
+                    2 := lost
+            score  int
+            board  list[int] with len(board) == 16
+                    no value in a fild is represented as 1
+        """
+        board_bytes = byte_str[6:]
+        state = int.from_bytes(byte_str[1:2], byteorder='little', signed=False)
+        score = int.from_bytes(byte_str[2:6], byteorder='little', signed=False)
+        board = [2 ** int(byte_str[i]) for i in range(len(board_bytes))]
+
+        return state, score, board
+
 
 if __name__ == '__main__':
-    conn = Connection(tcp_ip='depenbrock.ddns.net',
-                      tcp_port=48080)
+    conn = Connection(tcp_ip='depenbrock.ddns.net', tcp_port=48080)
+
+    """
     conn.connect()
     print(conn.data)
-    conn.sent_move("up")
+    conn.sent_move("quit")
+
+    conn.decode_server_message(conn.data)
+    conn.disconnect()
+    """
