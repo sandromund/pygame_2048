@@ -3,10 +3,10 @@ import socket
 
 class Connection:
 
-    def __init__(self, tcp_ip: str, tcp_port: int):
+    def __init__(self, tcp_ip, tcp_port):
         self.socket = None
         self.ip = tcp_ip
-        self.port = tcp_port
+        self.port = int(tcp_port)
         self.buffer = 1024
         self.mapping = self.get_direction_mapping()
         self.data = None
@@ -43,7 +43,7 @@ class Connection:
         self.socket.send(self.mapping[direction])
 
     @staticmethod
-    def decode_server_message(self, byte_str):
+    def decode_server_message(byte_str):
         """
         Server -> Client (22 B)
             1 Byte Type: 0x0
@@ -68,6 +68,3 @@ class Connection:
         board = [2 ** int(byte_str[i]) for i in range(len(board_bytes))]
 
         return state, score, board
-
-
-
