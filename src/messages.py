@@ -70,9 +70,4 @@ class Connection:
         return state, score, board
 
 
-if __name__ == '__main__':
-    conn = Connection(tcp_ip='depenbrock.ddns.net', tcp_port=48080)
-    conn.connect()
-    conn.sent_move("quit")
-    conn.decode_server_message(conn.data)
-    conn.disconnect()
+
