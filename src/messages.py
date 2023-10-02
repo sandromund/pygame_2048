@@ -9,7 +9,6 @@ class Connection:
         self.port = int(tcp_port)
         self.buffer = 1024
         self.mapping = self.get_direction_mapping()
-        self.data = None
 
     @staticmethod
     def get_direction_mapping():
@@ -34,13 +33,14 @@ class Connection:
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.ip, self.port))
-        self.data = self.socket.recv(self.buffer)
+        return self.socket.recv(self.buffer)
 
     def disconnect(self):
         self.socket.close()
 
     def sent_move(self, direction):
         self.socket.send(self.mapping[direction])
+        return self.socket.recv(self.buffer)
 
     @staticmethod
     def decode_server_message(byte_str):
