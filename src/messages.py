@@ -12,16 +12,6 @@ class Connection:
 
     @staticmethod
     def get_direction_mapping():
-        """
-        Client -> Server (2 B)
-            1 Byte Type: 0x1
-            1 Byte Direction:
-                Up: 0x0
-                Right: 0x1
-                Down: 0x2
-                Left 0x3
-                Quit: 0x4
-        """
         return {
             "up": b"\x01\x00",
             "right": b"\x01\x01",
@@ -44,27 +34,8 @@ class Connection:
 
     @staticmethod
     def decode_server_message(byte_str):
-        """
-        Server -> Client (22 B)
-            1 Byte Type: 0x0
-            1 Byte State:
-                Playing: 0x0
-                Won: 0x1
-                Lost: 0x2
-            4 Byte Score: unsigned int
-            16 Byte Board: exponent of powers of 2
-
-        return :
-            state   0 := playing
-                    1 := won
-                    2 := lost
-            score  int
-            board  list[int] with len(board) == 16
-                    no value in a fild is represented as 1
-        """
         board_bytes = byte_str[6:]
         state = int.from_bytes(byte_str[1:2], byteorder='little', signed=False)
         score = int.from_bytes(byte_str[2:6], byteorder='little', signed=False)
         board = [2 ** int(board_bytes[i]) for i in range(len(board_bytes))]
-
         return state, score, board
